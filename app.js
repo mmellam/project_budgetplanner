@@ -1,3 +1,5 @@
+//add front end, restrict negaive amounts, refactor if possible, add functionality
+
 const express = require('express');
 const app = express();
 //const cors = require('cors');
@@ -50,34 +52,35 @@ envRouter.param('envelopeId', (req, res, next, id) => {
 envRouter.get('/', (req, res) => {
     res.json(account)
 })
-envRouter.get('/:envelopeId', (req, res) => {
-    res.status(200).send(`Envelope with ID ${req.envelopeId} has the title ${account[0][req.envelopeId].title} and a budget of ${account[0][req.envelopeId].budget}`);
-})
-envRouter.put('/:envelopeId', (req, res) => {
-    const budget = req.query.budget;
-    const title = req.query.title;
-    
-    if (budget && title) {
-        account[0][req.envelopeId].budget = budget;
-        account[0][req.envelopeId].title = title;
-        res.status(200).send(`Envelope with ID ${req.envelopeId} was updated with title ${account[0][req.envelopeId].title} and updated with a budget of ${account[0][req.envelopeId].budget}`);
-    } else if (!title) {
-        account[0][req.envelopeId].budget = budget;
-        res.status(200).send(`Envelope with ID ${req.envelopeId} and title ${account[0][req.envelopeId].title} was updated with a budget of ${account[0][req.envelopeId].budget}`);
-    } else {
-        account[0][req.envelopeId].title = title;
-        res.status(200).send(`Envelope with ID ${req.envelopeId} was updated with title ${account[0][req.envelopeId].title} and has a budget of ${account[0][req.envelopeId].budget}`);
-    }     
-})
-envRouter.delete('/:envelopeId', (req, res) => {
-    delete account[0][req.envelopeId];
-    res.send(`Envelope with ID ${req.envelopeId} was successfully deleted`);
-})
+envRouter.route('/:envelopeId')
+    .get((req, res) => {
+        res.status(200).send(`Envelope with ID ${req.envelopeId} has the title ${account[0][req.envelopeId].title} and a budget of ${account[0][req.envelopeId].budget}`);
+    })
+    .put((req, res) => {
+        const budget = req.query.budget;
+        const title = req.query.title;
+        
+        if (budget && title) {
+            account[0][req.envelopeId].budget = budget;
+            account[0][req.envelopeId].title = title;
+            res.status(200).send(`Envelope with ID ${req.envelopeId} was updated with title ${account[0][req.envelopeId].title} and updated with a budget of ${account[0][req.envelopeId].budget}`);
+        } else if (!title) {
+            account[0][req.envelopeId].budget = budget;
+            res.status(200).send(`Envelope with ID ${req.envelopeId} and title ${account[0][req.envelopeId].title} was updated with a budget of ${account[0][req.envelopeId].budget}`);
+        } else {
+            account[0][req.envelopeId].title = title;
+            res.status(200).send(`Envelope with ID ${req.envelopeId} was updated with title ${account[0][req.envelopeId].title} and has a budget of ${account[0][req.envelopeId].budget}`);
+        }     
+    })
+    .delete((req, res) => {
+        delete account[0][req.envelopeId];
+        res.send(`Envelope with ID ${req.envelopeId} was successfully deleted`);
+    })
 
 envRouter.post('/new', (req, res) => {
     const id = req.query.id;
     const title = req.query.title;
-    const budget = req.query.budget;
+    const budget = Number(req.query.budget);
     if (!account[0][id]) {
         account[0][id] = {
             title: title,
