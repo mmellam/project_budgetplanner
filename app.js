@@ -28,9 +28,11 @@ const account = [
 ]
 
 //app.use(cors());
+/*
 app.post('/test', (req, res) => {
     res.send('ok')
 })
+*/
 
 const envRouter = express.Router();
 app.use('/envelopes', envRouter);
@@ -131,5 +133,5 @@ envRouter.post('/transfer', (req, res) => {
 })
 
 app.listen(PORT, () => {
-    console.log(`Server listening on ${PORT}`);
+    console.log(`Server listening on port ${PORT}`);
 })
