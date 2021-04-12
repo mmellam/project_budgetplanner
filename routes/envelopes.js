@@ -1,49 +1,18 @@
 const express = require('express');
 const envRouter = express.Router();
 const { getAll,
-        getEnvById
-    } = require('../db/index');
+        getEnvById,
+        updateEnv,
+        deleteEnvById
+                    } = require('../db/index');
 
-
-
-
-envRouter.param('envelopeId', (req, res, next, id) => {
-    const envelopeId = id;
-    try {
-        if (account[0][envelopeId]) {
-            req.envelopeId = envelopeId;
-            next();
-        } else {
-            return res.status(404).send(`An envelope with ID ${envelopeId} was not found`);
-        }
-    } catch(err) {
-        next(err);
-    }
-})
 
 envRouter.get('/', getAll);
+
 envRouter.route('/:envelopeId')
     .get(getEnvById)
-    .put((req, res) => {
-        const budget = req.query.budget;
-        const title = req.query.title;
-        
-        if (budget && title) {
-            account[0][req.envelopeId].budget = budget;
-            account[0][req.envelopeId].title = title;
-            res.status(200).send(`Envelope with ID ${req.envelopeId} was updated with title ${account[0][req.envelopeId].title} and updated with a budget of ${account[0][req.envelopeId].budget}`);
-        } else if (!title) {
-            account[0][req.envelopeId].budget = budget;
-            res.status(200).send(`Envelope with ID ${req.envelopeId} and title ${account[0][req.envelopeId].title} was updated with a budget of ${account[0][req.envelopeId].budget}`);
-        } else {
-            account[0][req.envelopeId].title = title;
-            res.status(200).send(`Envelope with ID ${req.envelopeId} was updated with title ${account[0][req.envelopeId].title} and has a budget of ${account[0][req.envelopeId].budget}`);
-        }     
-    })
-    .delete((req, res) => {
-        delete account[0][req.envelopeId];
-        res.send(`Envelope with ID ${req.envelopeId} was successfully deleted`);
-    })
+    .put(updateEnv)
+    .delete(deleteEnvById);
 
 envRouter.post('/new', (req, res) => {
     const id = req.query.id;
