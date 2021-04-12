@@ -1,27 +1,11 @@
 const express = require('express');
 const envRouter = express.Router();
+const { getAll,
+        getEnvById
+    } = require('../db/index');
 
 
-const account = [
-    {
-        1: {
-        title: 'food',
-        budget: 1000
-        },
-        2: {
-        title: 'housing',
-        budget: 1000
-        }, 
-        3: {
-        title: 'education',
-        budget: 1000
-        },
-        4: {
-        title: 'leisure',
-        budget: 1000
-        }
-    }
-];
+
 
 envRouter.param('envelopeId', (req, res, next, id) => {
     const envelopeId = id;
@@ -37,13 +21,9 @@ envRouter.param('envelopeId', (req, res, next, id) => {
     }
 })
 
-envRouter.get('/', (req, res) => {
-    res.json(account)
-})
+envRouter.get('/', getAll);
 envRouter.route('/:envelopeId')
-    .get((req, res) => {
-        res.status(200).send(`Envelope with ID ${req.envelopeId} has the title ${account[0][req.envelopeId].title} and a budget of ${account[0][req.envelopeId].budget}`);
-    })
+    .get(getEnvById)
     .put((req, res) => {
         const budget = req.query.budget;
         const title = req.query.title;

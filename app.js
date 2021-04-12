@@ -1,27 +1,9 @@
-//add front end, restrict negaive amounts, refactor if possible, add functionality
-
 const express = require('express');
-const envRouter = require('./routes/envelopes');
 const app = express();
-//const cors = require('cors');
-const { Pool } = require('pg');
-const pool = new Pool({
-    user: "postgres",
-    password: "postgres",
-    host: "localhost",
-    port: 5432,
-    database: "movies"
-});
+const envRouter = require('./routes/envelopes');
+const db = require('./db/index');
 
 const PORT = 3000;
-
-
-//app.use(cors());
-/*
-app.post('/test', (req, res) => {
-    res.send('ok')
-})
-*/
 
 app.use('/envelopes', envRouter);
 
