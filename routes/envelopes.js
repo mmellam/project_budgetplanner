@@ -7,7 +7,8 @@ const { getAll,
         createEnv,
         addBudget,
         subtractBudget,
-        transfer } = require('../db/index');
+        transfer
+                    } = require('../db/index');
 
 
 envRouter.get('/', getAll);
