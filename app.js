@@ -1,7 +1,6 @@
 const express = require('express');
 const app = express();
 const envRouter = require('./routes/envelopes');
-const db = require('./db/index');
 
 const PORT = 3000;
 
