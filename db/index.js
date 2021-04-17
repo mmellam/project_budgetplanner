@@ -7,18 +7,6 @@ const pool = new Pool({
     database: "budgetplanner"
 });
 
-// Send 404 response if envelope not found
-// Input validation
-// calculation validation: no negative envelopes
-
-const nameInputValidate = (input) => {
-    const regex = /^\w+$/g;
-    if (!regex.test(input)) {
-        return false;
-    } else {
-        return true;
-    }
-}
 
 const getAll = async (req, res) => {
     try {
@@ -27,20 +15,11 @@ const getAll = async (req, res) => {
         console.log("GET all successful");
     } catch (e) {
         console.log(e);
-        res.status(500).send;
+        res.status(500).send();
     } 
 };
 
 
-
-//console.log('Invalid name input');
-//return res.status(400).send('Error: Please enter a valid name.')
-/*
-console.log(regex.test(req.params[prop]))
-
-*/
-
-//done
 const getEnvById = async (req, res) => {
     try {
         // validate input number
@@ -58,10 +37,10 @@ const getEnvById = async (req, res) => {
         console.log("GET env by id successful");
     } catch (e) {
         console.log(e);
-        res.status(500).send;
+        res.status(500).send();
     } 
 };
-// done
+
 const updateEnv = async (req, res) => {
     try {
         const id = req.params.envelopeId;
@@ -73,7 +52,7 @@ const updateEnv = async (req, res) => {
         
         if (budget && name) {
             // validate input numbers and name and query db
-            if (isNaN(id) || isNaN(budget) || nameInputValidate(name) === false) {
+            if (isNaN(id) || isNaN(budget) || budget < 0|| nameInputValidate(name) === false) {
             return res.status(400).send('Error: Please enter valid inputs for id, name, and budget.')
             }
             updated = await pool.query("update envelope set name = $1, budget = $2 where id = $3 returning *", [name, budget, id]);
@@ -100,10 +79,10 @@ const updateEnv = async (req, res) => {
         console.log(`Envelope with id = ${updated.rows[0].id} was updated successfully`);
     } catch (e) {
         console.log(e);
-        return res.status(500).send; 
+        res.status(500).send(); 
     }
 }
-// done
+
 const deleteEnvById = async (req, res) => {
     try {
         // validate input number
@@ -121,16 +100,16 @@ const deleteEnvById = async (req, res) => {
         console.log(`Envelope with id = ${req.params.envelopeId} was deleted successfully`);
     } catch (e) {
         console.log(e);
-        return res.status(500).send;
+        res.status(500).send();
     }
 }
-// done
+
 const createEnv = async (req, res) => {
     try {
         const name = req.query.name;
         const budget = req.query.budget;
         // validate input number and name
-        if (nameInputValidate(name) === false || isNaN(budget)) {
+        if (nameInputValidate(name) === false || isNaN(budget) || budget < 0) {
             return res.status(400).send('Error: Please enter a valid name and budget.')
         }
         // query db
@@ -140,53 +119,57 @@ const createEnv = async (req, res) => {
         console.log(`Envelope with id = ${created.rows[0].id} was created successfully`);
     } catch (e) {
         console.log(e);
-        return res.status(500).send;
+        res.status(500).send();
     }
 }
-// done
+
 const addBudget = async (req, res) => {
     try {
         const id = req.params.envelopeId;
         const toAdd = req.query.amount;
         // validate input numbers
-        if (isNaN(id) || isNaN(toAdd)) {
-            return res.status(400).send('Error: Could not add to budget. Please enter valid numbers for the envelope id and/or amount to add.')
+        if (isNaN(id) || isNaN(toAdd) || toAdd < 0) {
+            return res.status(400).send('Error: Could not add to budget. Please enter valid numbers for the envelope id and amount to add.')
         }
         // query db and handle error if not found 
-        const updated = await pool.query("update envelope set budget = (budget + $1) where id = $2 returning *", [toAdd, req.params.envelopeId]);
+        const updated = await pool.query("update envelope set budget = (budget + $1) where id = $2 returning *", [toAdd, id]);
         if (updated.rows.length === 0) {
             console.log('Envelope not found');
-            return res.status(404).send(`Error: envelope with the provided id of ${req.params.envelopeId} does not exist`);
+            return res.status(404).send(`Error: envelope with the provided id of ${id} does not exist`);
         }
         // send response
         res.status(200).send(updated.rows);
         console.log(`Envelope with id = ${updated.rows[0].id} was updated successfully`);
     } catch (e) {
         console.log(e);
-        return res.status(500).send;
+        res.status(500).send();
     }   
 }
-// done
+
 const subtractBudget = async (req, res) => {
     try {
         const id = req.params.envelopeId;
         const toSubtract = req.query.amount;
         // validate input numbers
-        if (isNaN(id) || isNaN(toSubtract)) {
-            return res.status(400).send('Error: Could not subtract from budget. Please enter valid numbers for the envelope id and/or amount to subtract.')
+        if (isNaN(id) || isNaN(toSubtract) || toSubtract < 0) {
+            return res.status(400).send('Error: Could not subtract from budget. Please enter valid numbers for the envelope id and amount to subtract.')
         }
         // query db and handle error if not found 
-        const updated = await pool.query("update envelope set budget = (budget - $1) where id = $2 returning *", [toSubtract, req.params.envelopeId]);
+        const updated = await pool.query("update envelope set budget = (budget - $1) where id = $2 returning *", [toSubtract, id]);
         if (updated.rows.length === 0) {
             console.log('Envelope not found');
-            return res.status(404).send(`Error: envelope with the provided id of ${req.params.envelopeId} does not exist`);
+            return res.status(404).send(`Error: envelope with the provided id of ${id} does not exist`);
         }
         // send response
         console.log(`Envelope with id = ${updated.rows[0].id} was updated successfully`)
         res.status(200).send(updated.rows);
     } catch (e) {
         console.log(e);
-        return res.status(500).send;
+        // error message for budget constraint violation in db
+        if (e.constraint === 'envelope_budget_check') {
+            return res.status(400).send(`Error: Cannot subtract the given amount. Budget cannot become negative.`);
+        }
+        res.status(500).send();
     }   
 }
 
@@ -194,29 +177,46 @@ const transfer = async (req, res) => {
     const from = req.query.from;
     const to = req.query.to;
     const amount = req.query.amount;
-    //make this into a transaction, 2 queries
-    try {
-        if (isNan(from) || isNan(to) || isNaN(amount)) {
-            res.status(400).send(`Error: Could not transfer. Please enter valid numbers for from, to, and amount.`)
-        }
 
-        // query db and handle error if not found 
+    try {
+        // validate input numbers
+        if (isNaN(amount) || isNaN(from) || isNaN(to) || amount < 0) {
+            return res.status(400).send(`Error: Could not transfer. Please enter valid numbers for from, to, and amount.`)
+        }
+        // query db with a transaction and handle error if not found 
+        await pool.query("begin");
         const updatedFrom = await pool.query("update envelope set budget = (budget - $1) where id = $2 returning *", [amount, from]);
         const updatedTo = await pool.query("update envelope set budget = (budget + $1) where id = $2 returning *", [amount, to]);
+        
         if (updatedTo.rows.length === 0 || updatedFrom.rows.length === 0) {
+            await pool.query("rollback");
             console.log('Envelope not found');
-            return res.status(404).send(`Error: Could not transfer because envelope does not exist`);
+            return res.status(404).send(`Error: Could not transfer because envelope does not exist.`);
         }
+        await pool.query("commit");
         // send response
         res.status(200).json(updatedTo.rows);
         console.log('Transfer successful');
-
     } catch (e) {
+        await pool.query("rollback");
         console.log(e);
-        return res.status(500).send;
+        // error message for budget constraint violation in db
+        if (e.constraint === 'envelope_budget_check') {
+            return res.status(400).send(`Error: Cannot transfer the given amount. Budget cannot become negative.`);
+        }
+        res.status(500).send();
     }
 }
 
+// Helper function for name validation
+const nameInputValidate = (input) => {
+    const regex = /^\w+$/g;
+    if (!regex.test(input)) {
+        return false;
+    } else {
+        return true;
+    }
+}
 
 
 module.exports = {
