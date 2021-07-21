@@ -4,7 +4,7 @@
   "description": "A Node/Express API that allows users to create and manage a personal budget.",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js"    
   },
   "author": "Melanie Bucher",
   "license": "ISC",
