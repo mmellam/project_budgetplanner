@@ -7,6 +7,7 @@ const pool = new Pool({
     database: process.env.PG_DB
 });
 
+
 // Envelopes router
 
 const getAll = async (req, res) => {
@@ -47,7 +48,6 @@ const updateEnv = async (req, res) => {
         const budget = req.query.budget;
         const name = req.query.name;
         
-        //description missing
         let updated = [];
         
         if (budget && name) {
@@ -81,7 +81,7 @@ const updateEnv = async (req, res) => {
         console.log(e);
         res.status(500).send(); 
     }
-}
+};
 
 const deleteEnvById = async (req, res) => {
     try {
@@ -102,7 +102,7 @@ const deleteEnvById = async (req, res) => {
         console.log(e);
         res.status(500).send();
     }
-}
+};
 
 const createEnv = async (req, res) => {
     try {
@@ -121,7 +121,7 @@ const createEnv = async (req, res) => {
         console.log(e);
         res.status(500).send();
     }
-}
+};
 
 const addBudget = async (req, res) => {
     try {
@@ -144,7 +144,7 @@ const addBudget = async (req, res) => {
         console.log(e);
         res.status(500).send();
     }   
-}
+};
 
 const subtractBudget = async (req, res) => {
     try {
@@ -171,7 +171,7 @@ const subtractBudget = async (req, res) => {
         }
         res.status(500).send();
     }   
-}
+};
 
 const transfer = async (req, res) => {
     const from = req.query.from;
@@ -208,67 +208,43 @@ const transfer = async (req, res) => {
         }
         res.status(500).send();
     }
-}
+};
+
 
 // Transfers router
 
-// Helper function for transfer logging -not yet working
-const writeTransfer = async (sender, recipient, amount) => {
-    try {
-        await pool.query("insert into transfer(amount, sender_id, recipient_id) values($1, $2, $3)", [amount, sender, recipient]);
-        console.log('Logging successful');
-        return;
-    } catch (e) {
-        /*
-        await pool.query("rollback");
-        console.log(e);
-        res.status(500).send();
-        */
-    }
-}
-//transfer.js queries - needs input validation
 const getTransfers = async (req, res) => {
     try {
         const result = await pool.query("select * from transfer order by id");
+        if (result.rows.length === 0) {
+            console.log('No transfer records found');
+            return res.status(404).send(`Error: no transfer records found`);
+        }
         res.status(200).send(result.rows);
     } catch (e) {
         console.log(e);
         res.status(500).send();
     }
-}
+};
 
 const getTransferById = async (req, res) => {
     try {
+        // validate input id
+        if (isNaN(req.params.transferId)) {
+            return res.status(400).send(`Error: Please enter a valid number for the transfer record id.`)
+        }
         const result = await pool.query("select * from transfer where id = $1", [req.params.transferId]);
+        if (result.rows.length === 0) {
+            console.log('No transfer record found');
+            return res.status(404).send(`Error: transfer record with the provided id of ${req.params.transferId} does not exist`);
+        }
         res.status(200).send(result.rows);
     } catch (e) {
         console.log(e);
         res.status(500).send();
     }
-}
-// add /subtract queries - rewrite 
-const deleteTransferById = async (req, res) => {
-    try {
-        // validate input number
-        if (isNaN(req.params.transferId)) {
-            return res.status(400).send('Error: Please enter a valid number for the transfer record id.')
-        }
-        // query db and handle error if not found 
-        const deleted = await pool.query("delete from transfer where id = $1 returning *", [req.params.transferId]);
-        if (deleted.rows.length === 0) {
-            console.log('Transfer record not found');
-            return res.status(404).send(`Error: transfer record with the provided id of ${req.params.transferId} does not exist`);
-        }
-        // reverse transfer in envelopes
+};
 
-        // send response
-        res.status(200).send(deleted.rows);
-        console.log(`Transfer record with id = ${req.params.transferId} was deleted successfully`);
-    } catch (e) {
-        console.log(e);
-        res.status(500).send();
-    }
-}
 
 
 // Helper function for name validation
