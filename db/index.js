@@ -246,6 +246,49 @@ const getTransferById = async (req, res) => {
 };
 
 
+// TODOs:
+
+// Helper function for transfer logging -not yet working
+const writeTransfer = async (sender, recipient, amount) => {
+    try {
+        await pool.query("insert into transfer(amount, sender_id, recipient_id) values($1, $2, $3)", [amount, sender, recipient]);
+        console.log('Logging successful');
+        return;
+    } catch (e) {
+        /*
+        await pool.query("rollback");
+        console.log(e);
+        res.status(500).send();
+        */
+    }
+}
+
+
+// add /subtract queries - rewrite 
+const deleteTransferById = async (req, res) => {
+    try {
+        // validate input number
+        if (isNaN(req.params.transferId)) {
+            return res.status(400).send('Error: Please enter a valid number for the transfer record id.')
+        }
+        // query db and handle error if not found 
+        const deleted = await pool.query("delete from transfer where id = $1 returning *", [req.params.transferId]);
+        if (deleted.rows.length === 0) {
+            console.log('Transfer record not found');
+            return res.status(404).send(`Error: transfer record with the provided id of ${req.params.transferId} does not exist`);
+        }
+        // reverse transfer in envelopes
+
+        // send response
+        res.status(200).send(deleted.rows);
+        console.log(`Transfer record with id = ${req.params.transferId} was deleted successfully`);
+    } catch (e) {
+        console.log(e);
+        res.status(500).send();
+    }
+}
+
+
 
 // Helper function for name validation
 const nameInputValidate = (input) => {
