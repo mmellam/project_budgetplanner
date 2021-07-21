@@ -268,6 +268,5 @@ module.exports = {
     subtractBudget,
     transfer,
     getTransfers,
-    getTransferById,
-    deleteTransferById
+    getTransferById
 };
