@@ -7,8 +7,7 @@ const { getAll,
         createEnv,
         addBudget,
         subtractBudget,
-        transfer
-                    } = require('../db/index');
+        transfer } = require('../db/index');
 
 
 envRouter.get('/', getAll);
@@ -25,5 +24,6 @@ envRouter.post('/:envelopeId/add', addBudget);
 envRouter.post('/:envelopeId/subtract', subtractBudget);
 
 envRouter.post('/transfer', transfer);
+
 
 module.exports = envRouter;

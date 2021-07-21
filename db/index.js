@@ -1,24 +1,24 @@
 const { Pool } = require('pg');
 const pool = new Pool({
-    user: "postgres",
-    password: "postgres",
-    host: "localhost",
-    port: 5432,
-    database: "budgetplanner"
+    user: process.env.PG_USER,
+    password: process.env.PG_PW,
+    host: process.env.PG_HOST,
+    port: process.env.PG_PORT,
+    database: process.env.PG_DB
 });
 
+// Envelopes router
 
 const getAll = async (req, res) => {
     try {
         const result = await pool.query("select * from envelope order by id");
-        res.send(result.rows);
+        res.status(200).send(result.rows);
         console.log("GET all successful");
     } catch (e) {
         console.log(e);
         res.status(500).send();
     } 
 };
-
 
 const getEnvById = async (req, res) => {
     try {
@@ -193,6 +193,8 @@ const transfer = async (req, res) => {
             console.log('Envelope not found');
             return res.status(404).send(`Error: Could not transfer because envelope does not exist.`);
         }
+        //writeTransfer(from, to, amount);
+        await pool.query("insert into transfer(amount, sender_id, recipient_id) values($1, $2, $3)", [amount, from, to]);
         await pool.query("commit");
         // send response
         res.status(200).json(updatedTo.rows);
@@ -207,6 +209,67 @@ const transfer = async (req, res) => {
         res.status(500).send();
     }
 }
+
+// Transfers router
+
+// Helper function for transfer logging -not yet working
+const writeTransfer = async (sender, recipient, amount) => {
+    try {
+        await pool.query("insert into transfer(amount, sender_id, recipient_id) values($1, $2, $3)", [amount, sender, recipient]);
+        console.log('Logging successful');
+        return;
+    } catch (e) {
+        /*
+        await pool.query("rollback");
+        console.log(e);
+        res.status(500).send();
+        */
+    }
+}
+//transfer.js queries - needs input validation
+const getTransfers = async (req, res) => {
+    try {
+        const result = await pool.query("select * from transfer order by id");
+        res.status(200).send(result.rows);
+    } catch (e) {
+        console.log(e);
+        res.status(500).send();
+    }
+}
+
+const getTransferById = async (req, res) => {
+    try {
+        const result = await pool.query("select * from transfer where id = $1", [req.params.transferId]);
+        res.status(200).send(result.rows);
+    } catch (e) {
+        console.log(e);
+        res.status(500).send();
+    }
+}
+// add /subtract queries - rewrite 
+const deleteTransferById = async (req, res) => {
+    try {
+        // validate input number
+        if (isNaN(req.params.transferId)) {
+            return res.status(400).send('Error: Please enter a valid number for the transfer record id.')
+        }
+        // query db and handle error if not found 
+        const deleted = await pool.query("delete from transfer where id = $1 returning *", [req.params.transferId]);
+        if (deleted.rows.length === 0) {
+            console.log('Transfer record not found');
+            return res.status(404).send(`Error: transfer record with the provided id of ${req.params.transferId} does not exist`);
+        }
+        // reverse transfer in envelopes
+
+        // send response
+        res.status(200).send(deleted.rows);
+        console.log(`Transfer record with id = ${req.params.transferId} was deleted successfully`);
+    } catch (e) {
+        console.log(e);
+        res.status(500).send();
+    }
+}
+
 
 // Helper function for name validation
 const nameInputValidate = (input) => {
@@ -227,5 +290,8 @@ module.exports = {
     createEnv,
     addBudget,
     subtractBudget,
-    transfer
+    transfer,
+    getTransfers,
+    getTransferById,
+    deleteTransferById
 };
