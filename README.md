@@ -1,13 +1,14 @@
 # Budgetplanner API
 
-The documentation for this API was written using Postman Collections. Please view this link for the complete API documentation:
+The documentation for this web API was written using Postman Collections. Please view this link for the complete API documentation:
 https://documenter.getpostman.com/view/16754406/TzsYM8tX
 
 ## Introduction
 A Node/Express.js API that allows users to create and manage a personal budget. Using Envelope Budgeting principles, the API allows users to manage budget envelopes and track the balance of each envelope.
 
+
 ## Purpose
-The purpose of this managing the user's budget and tracks expenses in various categories. Current features include:
+The purpose of this app is managing the user's budget and tracking expenses in various categories. Current features include:
 - Store user's budgets in various categories
 - Create new envelopes
 - Update the name or budget of envelopes
@@ -17,8 +18,10 @@ The purpose of this managing the user's budget and tracks expenses in various ca
 
 The app is connected to a local database to persist the data. Data validation is implemented server-side and constraints in the database tables ensure data validity.
 
+
 ## Technologies used
 Node/Express.js, PostgreSQL
+
 
 ## Endpoints
 - /
@@ -33,9 +36,11 @@ Node/Express.js, PostgreSQL
 
 See the examples in the documentation for the respective query parameters and responses.
 
+
 ## HTTP Status Codes
 - Success: 200, 201
 - Error: 400, 404
+
 
 ## Process and further development
 This app was based on a simple HTTP request API project that was part of the back-end engineering course on codecademy.com (see https://github.com/mmellam/project-budgetplanner-part-1). 
@@ -47,6 +52,18 @@ After planning out the database design, I used PostgreSQL to create the necessar
 Future features may include:
 - front-end rendering and UI for user input, e.g. to include a name and details about the transactions made
 - further records of budget changes and data analysis of records for UI rendering
+- server-side API testing
 - feature to reverse transactions
 - implementation of JSON error objects
 
+
+## Database implementation
+Tables and sequences
+
+![image](https://drive.google.com/uc?export=view&id=14maXA6aWyNZmZPhokceje5_MNVHng50a)
+
+![image](https://drive.google.com/uc?export=view&id=1IelbZ96HffvAOSYPzu3GF0JnqC_7GOCd)
+
+![image](https://drive.google.com/uc?export=view&id=1SFU9utA_wd8ItsetE2NEPX_-n4sgbq0D)
+
+![image](https://drive.google.com/uc?export=view&id=1bZv4wrBzG7jKDqmn2C26i3IdvGyUongq)
